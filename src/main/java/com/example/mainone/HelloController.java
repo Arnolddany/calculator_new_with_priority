@@ -12,7 +12,6 @@ public class HelloController implements Initializable {
     public Button resultedButton;
     public Button clearButton;
     private int index = 1;
-    private String resultOfCalculations = " ";
     private String resultedInput;
     @FXML
     public Button degreeButton;
@@ -38,8 +37,6 @@ public class HelloController implements Initializable {
     public Button mulButton;
     @FXML
     public Button divButton;
-    @FXML
-    public Spinner<Double> spinnerOneField;
     public TextField input1;
     @FXML
     private TextArea listHistory;
@@ -58,13 +55,13 @@ public class HelloController implements Initializable {
     private final ArrayList<Integer> mulAndDivIndexList = new ArrayList<>();
     private final ArrayList<Integer> addAndSubIndexList = new ArrayList<>();
     private final ArrayList<Integer> allOperationsList = new ArrayList<>();
-    private final ArrayList<Integer> allOperationsListNotSorted = new ArrayList<>();
     private final ArrayList<Double> numberList = new ArrayList<>();
+    private final ArrayList<Operation> numAndAction = new ArrayList<>();
 
     @FXML
-    protected void clearInput2() {
-        if (!input2.getText().isEmpty()) {
-            input2.clear();
+    protected void clearInput1() {
+        if (!input1.getText().isEmpty()) {
+            input1.clear();
         }
     }
     @FXML
@@ -72,7 +69,7 @@ public class HelloController implements Initializable {
         String timeOperation = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
         String resultForHistory = null;
         if (resultedButton.isArmed()) {
-            resultForHistory = index + ") [" + timeOperation + " " + resultedInput;
+            resultForHistory = index + ") [" + timeOperation + "] " + resultedInput;
         }
         index++;
         historyList.add(resultForHistory);
@@ -86,6 +83,10 @@ public class HelloController implements Initializable {
         if (degreeButton.isArmed()) {
             resultForHistory = index + ") [" + timeOperation + "] " + a + "^" + b + " = " + res;
         }
+        index++;
+        historyList.add(resultForHistory);
+        log(String.valueOf(historyList));
+        listHistory.appendText(resultForHistory + System.lineSeparator());
     }
     private void addResultToHistoryOneOperands(double a, double res) {
         String timeOperation = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
@@ -110,101 +111,184 @@ public class HelloController implements Initializable {
         log(String.valueOf(historyList));
         listHistory.appendText(resultForHistory + System.lineSeparator());
     }
-    protected void getNumbers() {
+    private void test(){
+//        String st = "abcworldxyz";
+//        System.out.println(st);
+//        int wo = st.indexOf("wo");
+//        System.out.println(wo);
+//        int ld = st.indexOf("ld");
+//        String str = "one";
+//        System.out.println(ld);
+//        StringBuilder stringBuilder = new StringBuilder(st);
+//        stringBuilder.replace(wo, ld+2, str);
+//        System.out.println(stringBuilder);
+        // new CharSequence()
+        // st.replace();
+        resultedInput = "8.0+7.0*6.0/5.0-4.0";
+        int i = 0;
+        while (resultedInput.contains("+") || resultedInput.contains("-") || resultedInput.contains("*") || resultedInput.contains("/")) {
+            resultedInput = gets(resultedInput, i);
+        }
+    }
+    private String gets(String input, int index) {
+        getSymbols(input);
+        log(Arrays.toString(allOperationsList.toArray()));
+        getNumbers(input);
+        log(Arrays.toString(numberList.toArray()));
+        allOperationsList.removeLast();
+        calculate();
+        double result = 0;
+            if (numAndAction.get(index).getAction() == '*') {
+                result = numAndAction.get(index).getA() * numAndAction.get(index).getB();
+                log(String.valueOf(result));
+            } else if (numAndAction.get(index).getAction() == '/') {
+                log(String.valueOf(numAndAction.get(index).getA()));
+                log(String.valueOf(numAndAction.get(index).getB()));
+                result = numAndAction.get(index).getA() / numAndAction.get(index).getB();
+                log(String.valueOf(result));
+            } else if (numAndAction.get(index).getAction() == '+') {
+                result = numAndAction.get(index).getA() + numAndAction.get(index).getB();
+                log(String.valueOf(result));
+            } else if (numAndAction.get(index).getAction() == '-') {
+                result = numAndAction.get(index).getA() - numAndAction.get(index).getB();
+                log(String.valueOf(result));
+            }
+            log(String.valueOf(numAndAction.get(index).getA()));
+            int a = input.indexOf(String.valueOf(numAndAction.get(index).getA()));
+            log(String.valueOf(a));
+            int b = input.indexOf(String.valueOf(numAndAction.get(index).getB()));
+            log(String.valueOf(b));
+            String string = String.valueOf(numAndAction.get(index).getB());
+            int length = string.length();
+            StringBuilder stringResult = new StringBuilder(input);
+            stringResult.replace(a, b+length, String.valueOf(result));
+            log(String.valueOf(stringResult));
+            input = String.valueOf(stringResult);
+            clearArrays();
+        return input;
+    }
+
+    protected void getNumbers(String input) {
         double a;
         log("Результат:");
-        a = Double.parseDouble(resultedInput.substring(0, allOperationsList.getFirst()));
-        log(String.valueOf(a));
+        a = Double.parseDouble(input.substring(0, allOperationsList.getFirst()));
         numberList.add(a);
         for (int i = 0; i < allOperationsList.size()-1; i++) {
-            a = Double.parseDouble(resultedInput.substring(allOperationsList.get(i) + 1, allOperationsList.get(i + 1)));
+            a = Double.parseDouble(input.substring(allOperationsList.get(i) + 1, allOperationsList.get(i + 1)));
             numberList.add(a);
-            log(String.valueOf(a));
         }
         log(Arrays.toString(numberList.toArray()));
     }
-    protected double calculate() {
-        double result = 0;
-        log(String.valueOf(allOperationsListNotSorted.size()));
-        for (Integer integer : allOperationsListNotSorted) {
+    protected void calculate() {
+        for (Integer integer : allOperationsList) {
             double a = numberList.getFirst();
             double b = numberList.get(1);
-            log(String.valueOf(mulAndDivIndexList.contains(integer)));
+            char action;
             if (mulAndDivIndexList.contains(integer)) {
-                log(String.valueOf(a));
-                log(String.valueOf(multiplicationIndexList.contains(integer)));
                 if (multiplicationIndexList.contains(integer)) {
-                    result = a * b;
-                    log(String.valueOf(result));
+                    action = '*';
+                    numAndAction.add(new Operation(a, b, action));
                 } else {
-                    result = a / b;
+                    action = '/';
+                    numAndAction.add(new Operation(a, b, action));
                 }
             } else {
                 if (addIndexList.contains(integer)) {
-                    result = a + b;
-                    log(String.valueOf(result));
+                    action = '+';
+                    numAndAction.add(new Operation(a, b, action));
                 } else {
-                    result = a - b;
+                    action = '-';
+                    numAndAction.add(new Operation(a, b, action));
                 }
             }
             numberList.removeFirst();
-            numberList.set(0, result);
-            log(Arrays.toString(numberList.toArray()));
         }
-        log(String.valueOf(result));
-        return result;
+        log(Arrays.toString(numAndAction.toArray()));
+        Collections.sort(numAndAction);
+        log(Arrays.toString(numAndAction.toArray()));
+    }
+    private String getResult(String input) {
+        getSymbols(input);
+        log(Arrays.toString(allOperationsList.toArray()));
+        getNumbers(input);
+        log(Arrays.toString(numberList.toArray()));
+        allOperationsList.removeLast();
+        calculate();
+        double result = 0;
+        if (numAndAction.getFirst().getAction() == '*') {
+            result = numAndAction.getFirst().getA() * numAndAction.getFirst().getB();
+            log(String.valueOf(result));
+        } else if (numAndAction.getFirst().getAction() == '/') {
+            log(String.valueOf(numAndAction.getFirst().getA()));
+            log(String.valueOf(numAndAction.getFirst().getB()));
+            result = numAndAction.getFirst().getA() / numAndAction.getFirst().getB();
+            log(String.valueOf(result));
+        } else if (numAndAction.getFirst().getAction() == '+') {
+            result = numAndAction.getFirst().getA() + numAndAction.getFirst().getB();
+            log(String.valueOf(result));
+        } else if (numAndAction.getFirst().getAction() == '-') {
+            result = numAndAction.getFirst().getA() - numAndAction.getFirst().getB();
+            log(String.valueOf(result));
+        }
+        log(String.valueOf(numAndAction.getFirst().getA()));
+        String removePart = numAndAction.getFirst().getA() + String.valueOf(numAndAction.getFirst().getAction()) + String.valueOf(numAndAction.getFirst().getB());
+        int a = input.indexOf(removePart);
+        log(String.valueOf(a));
+        int b = removePart.length();
+        log(String.valueOf(b));
+        StringBuilder stringResult = new StringBuilder(input);
+        stringResult.replace(a, a+b, String.valueOf(result));
+        log(String.valueOf(stringResult));
+        input = String.valueOf(stringResult);
+        clearArrays();
+        return input;
     }
     @FXML
-    protected void calculations() {
-        System.out.println(resultedInput);
+    protected void getSymbols(String input) {
+        System.out.println(input);
         
         char symbol = '+';
-        int index = resultedInput.indexOf(symbol);
+        int index = input.indexOf(symbol);
         log("Плюсы");
         while (index != -1) {
             log(String.valueOf(index));
             addIndexList.add(index);
-            index = resultedInput.indexOf(symbol, index + 1);
+            index = input.indexOf(symbol, index + 1);
         }
         symbol = '-';
-        index = resultedInput.indexOf(symbol);
+        index = input.indexOf(symbol);
         log("Минусы");
         while (index != -1) {
             log(String.valueOf(index));
             subIndexList.add(index);
-            index = resultedInput.indexOf(symbol, index + 1);
+            index = input.indexOf(symbol, index + 1);
         }
         symbol = '*';
-        index = resultedInput.indexOf(symbol);
+        index = input.indexOf(symbol);
         log("Умножение");
         while (index != -1) {
             log(String.valueOf(index));
             multiplicationIndexList.add(index);
-            index = resultedInput.indexOf(symbol, index + 1);
+            index = input.indexOf(symbol, index + 1);
         }
         symbol = '/';
-        index = resultedInput.indexOf(symbol);
+        index = input.indexOf(symbol);
         log("Деление");
         while (index != -1) {
             log(String.valueOf(index));
             dividingIndexList.add(index);
-            index = resultedInput.indexOf(symbol, index + 1);
+            index = input.indexOf(symbol, index + 1);
         }
         mulAndDivIndexList.addAll(multiplicationIndexList);
         mulAndDivIndexList.addAll(dividingIndexList);
-        sortArray(mulAndDivIndexList);
 
         addAndSubIndexList.addAll(addIndexList);
         addAndSubIndexList.addAll(subIndexList);
-        sortArray(addAndSubIndexList);
 
         allOperationsList.addAll(mulAndDivIndexList);
         allOperationsList.addAll(addAndSubIndexList);
         allOperationsList.add(resultedInput.length());
         sortArray(allOperationsList);
-
-        allOperationsListNotSorted.addAll(mulAndDivIndexList);
-        allOperationsListNotSorted.addAll(addAndSubIndexList);
     }
 
     private void sortArray(ArrayList<Integer> arrayList) {
@@ -217,6 +301,16 @@ public class HelloController implements Initializable {
             isDiv = true;
         }
         return isDiv;
+    }
+    private String resulted() {
+        while (resultedInput.contains("+") || resultedInput.contains("-") || resultedInput.contains("*") || resultedInput.contains("/")) {
+            if (resultedInput.indexOf('-') != 0){
+                resultedInput = getResult(resultedInput);
+            } else {
+                return resultedInput;
+            }
+        }
+        return resultedInput;
     }
     @FXML
     protected void checkArmed() {
@@ -235,12 +329,10 @@ public class HelloController implements Initializable {
             input2.appendText(String.valueOf(symbol));
         } else if (resultedButton.isArmed()) {
             resultedInput = input2.getText();
-            calculations();
-            getNumbers();
-            allOperationsList.removeLast();
-            input2.appendText("=" + calculate());
+            input2.appendText("=" + resulted());
             resultedInput = input2.getText();
             addResultToHistory();
+            input2.clear();
         }
     }
     @FXML
@@ -272,6 +364,7 @@ public class HelloController implements Initializable {
     @FXML
     protected void clearField() {
         input2.clear();
+        input1.requestFocus();
         resultedInput = "";
         numberList.clear();
         addIndexList.clear();
@@ -281,98 +374,146 @@ public class HelloController implements Initializable {
         mulAndDivIndexList.clear();
         addAndSubIndexList.clear();
         allOperationsList.clear();
-        allOperationsListNotSorted.clear();
+        resultedInput="";
+    }
+    @FXML
+    protected void clearArrays() {
+        numberList.clear();
+        addIndexList.clear();
+        subIndexList.clear();
+        multiplicationIndexList.clear();
+        dividingIndexList.clear();
+        mulAndDivIndexList.clear();
+        addAndSubIndexList.clear();
+        allOperationsList.clear();
+        numAndAction.clear();
     }
     @FXML
     protected void degreeNumbers() {
-        if (!input2.getText().isEmpty()) {
-            double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-            double b = Double.parseDouble(input2.getText());
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            double b = 2;
             double res = Math.pow(a, b);
-            clearInput2();
+            clearInput1();
             result.setText("Результат: " + res);
             addResultToHistoryTwoOperands(a, b, res);
         } else {
-            result.setText("Заполните оба поля!");
+            input1.requestFocus();
+            result.setText("Заполните поле!");
         }
     }
 
     @FXML
     protected void sqrtNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        double res = Math.sqrt(a);
-        clearInput2();
-        result.setText("Результат: " + res);
-        addResultToHistoryOneOperands(a, res);
-    }
-
-    @FXML
-    protected void sinNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        double res = Math.sin(a);
-        clearInput2();
-        result.setText("Результат: " + res);
-        addResultToHistoryOneOperands(a, res);
-    }
-
-    @FXML
-    protected void cosNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        double res = Math.cos(a);
-        clearInput2();
-        result.setText("Результат: " + res);
-        addResultToHistoryOneOperands(a, res);
-    }
-
-    @FXML
-    protected void tanNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        double res = Math.tan(a);
-        clearInput2();
-        result.setText("Результат: " + res);
-        addResultToHistoryOneOperands(a, res);
-    }
-
-    @FXML
-    protected void arcsinNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        if ((a >= -1) && (a <= 1)) {
-            double res = Math.asin(a);
-            clearInput2();
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            double res = Math.sqrt(a);
+            clearInput1();
             result.setText("Результат: " + res);
             addResultToHistoryOneOperands(a, res);
         } else {
-            result.setText("Недопустимое значение!");
+            input1.requestFocus();
+            result.setText("Заполните поле!");
         }
     }
 
     @FXML
-    protected void arccosNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        if ((a >= -1) && (a <= 1)) {
-            double res = Math.acos(a);
-            clearInput2();
+    protected void sinNumber() {
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            double res = Math.sin(a);
+            clearInput1();
             result.setText("Результат: " + res);
             addResultToHistoryOneOperands(a, res);
         } else {
-            result.setText("Недопустимое значение!");
+            input1.requestFocus();
+            result.setText("Заполните поле!");
+        }
+    }
+
+    @FXML
+    protected void cosNumber() {
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            double res = Math.cos(a);
+            clearInput1();
+            result.setText("Результат: " + res);
+            addResultToHistoryOneOperands(a, res);
+        } else {
+            input1.requestFocus();
+            result.setText("Заполните поле!");
+        }
+    }
+
+    @FXML
+    protected void tanNumber() {
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            double res = Math.tan(a);
+            clearInput1();
+            result.setText("Результат: " + res);
+            addResultToHistoryOneOperands(a, res);
+        } else {
+            input1.requestFocus();
+            result.setText("Заполните поле!");
+        }
+    }
+
+    @FXML
+    protected void arcsinNumber() {
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            if ((a >= -1) && (a <= 1)) {
+                double res = Math.asin(a);
+                clearInput1();
+                result.setText("Результат: " + res);
+                addResultToHistoryOneOperands(a, res);
+            } else {
+                clearInput1();
+                input1.requestFocus();
+                result.setText("Недопустимое значение!");
+            }
+        } else {
+            input1.requestFocus();
+            result.setText("Заполните поле!");
+        }
+
+    }
+
+    @FXML
+    protected void arccosNumber() {
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            if ((a >= -1) && (a <= 1)) {
+                double res = Math.acos(a);
+                clearInput1();
+                result.setText("Результат: " + res);
+                addResultToHistoryOneOperands(a, res);
+            } else {
+                clearInput1();
+                input1.requestFocus();
+                result.setText("Недопустимое значение!");
+            }
+        } else {
+            clearInput1();
+            input1.requestFocus();
+            result.setText("Заполните поле!");
         }
     }
 
     @FXML
     protected void arctanNumber() {
-        clearInput2();
-        double a = Double.parseDouble(String.valueOf(spinnerOneField.getValue()));
-        double res = Math.atan(a);
-        clearInput2();
-        result.setText("Результат: " + res);
-        addResultToHistoryOneOperands(a, res);
+        if (!input1.getText().isEmpty()) {
+            double a = Double.parseDouble(String.valueOf(input1.getText()));
+            double res = Math.atan(a);
+            clearInput1();
+            input1.requestFocus();
+            result.setText("Результат: " + res);
+            addResultToHistoryOneOperands(a, res);
+        } else {
+            input1.requestFocus();
+            result.setText("Заполните поле!");
+        }
     }
 
     private boolean isDigitSymbol(String newValue) {
