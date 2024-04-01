@@ -34,6 +34,6 @@
    <TextArea fx:id="listHistory" editable="false" layoutX="271.0" layoutY="134.0" prefHeight="120.0" prefWidth="210.0" promptText="История" />
    <Button fx:id="resultedButton" layoutX="65.0" layoutY="213.0" mnemonicParsing="false" onAction="#inputCalculations" text=" = " />
    <TextField fx:id="input2" editable="false" layoutX="271.0" layoutY="88.0" prefHeight="26.0" prefWidth="210.0" />
-   <TextArea fx:id="taLog" layoutX="271.0" layoutY="266.0" prefHeight="76.0" prefWidth="210.0" />
+   <TextArea fx:id="taLog" layoutX="271.0" layoutY="266.0" prefHeight="76.0" prefWidth="210.0" visible="false" />
    <Button fx:id="clearButton" layoutX="413.0" layoutY="50.0" mnemonicParsing="false" onAction="#clearField" text="Очистить" />
 </AnchorPane>

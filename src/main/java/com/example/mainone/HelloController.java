@@ -56,9 +56,7 @@ public class HelloController implements Initializable {
     private final ArrayList<Integer> addAndSubIndexList = new ArrayList<>();
     private final ArrayList<Integer> allOperationsList = new ArrayList<>();
     private final ArrayList<Double> numberList = new ArrayList<>();
-    private final ArrayList<Operation> numAndAction = new ArrayList<>();
-
-    @FXML
+    private final ArrayList<Operation> numAndAction = new ArrayList<>();@FXML
     protected void clearInput1() {
         if (!input1.getText().isEmpty()) {
             input1.clear();
@@ -111,71 +109,17 @@ public class HelloController implements Initializable {
         log(String.valueOf(historyList));
         listHistory.appendText(resultForHistory + System.lineSeparator());
     }
-    private void test(){
-//        String st = "abcworldxyz";
-//        System.out.println(st);
-//        int wo = st.indexOf("wo");
-//        System.out.println(wo);
-//        int ld = st.indexOf("ld");
-//        String str = "one";
-//        System.out.println(ld);
-//        StringBuilder stringBuilder = new StringBuilder(st);
-//        stringBuilder.replace(wo, ld+2, str);
-//        System.out.println(stringBuilder);
-        // new CharSequence()
-        // st.replace();
-        resultedInput = "8.0+7.0*6.0/5.0-4.0";
-        int i = 0;
-        while (resultedInput.contains("+") || resultedInput.contains("-") || resultedInput.contains("*") || resultedInput.contains("/")) {
-            resultedInput = gets(resultedInput, i);
-        }
-    }
-    private String gets(String input, int index) {
-        getSymbols(input);
-        log(Arrays.toString(allOperationsList.toArray()));
-        getNumbers(input);
-        log(Arrays.toString(numberList.toArray()));
-        allOperationsList.removeLast();
-        calculate();
-        double result = 0;
-            if (numAndAction.get(index).getAction() == '*') {
-                result = numAndAction.get(index).getA() * numAndAction.get(index).getB();
-                log(String.valueOf(result));
-            } else if (numAndAction.get(index).getAction() == '/') {
-                log(String.valueOf(numAndAction.get(index).getA()));
-                log(String.valueOf(numAndAction.get(index).getB()));
-                result = numAndAction.get(index).getA() / numAndAction.get(index).getB();
-                log(String.valueOf(result));
-            } else if (numAndAction.get(index).getAction() == '+') {
-                result = numAndAction.get(index).getA() + numAndAction.get(index).getB();
-                log(String.valueOf(result));
-            } else if (numAndAction.get(index).getAction() == '-') {
-                result = numAndAction.get(index).getA() - numAndAction.get(index).getB();
-                log(String.valueOf(result));
-            }
-            log(String.valueOf(numAndAction.get(index).getA()));
-            int a = input.indexOf(String.valueOf(numAndAction.get(index).getA()));
-            log(String.valueOf(a));
-            int b = input.indexOf(String.valueOf(numAndAction.get(index).getB()));
-            log(String.valueOf(b));
-            String string = String.valueOf(numAndAction.get(index).getB());
-            int length = string.length();
-            StringBuilder stringResult = new StringBuilder(input);
-            stringResult.replace(a, b+length, String.valueOf(result));
-            log(String.valueOf(stringResult));
-            input = String.valueOf(stringResult);
-            clearArrays();
-        return input;
-    }
-
     protected void getNumbers(String input) {
         double a;
         log("Результат:");
         a = Double.parseDouble(input.substring(0, allOperationsList.getFirst()));
+        log(String.valueOf(a));
         numberList.add(a);
         for (int i = 0; i < allOperationsList.size()-1; i++) {
+            log(input.substring(allOperationsList.get(i) + 1, allOperationsList.get(i + 1)));
             a = Double.parseDouble(input.substring(allOperationsList.get(i) + 1, allOperationsList.get(i + 1)));
             numberList.add(a);
+
         }
         log(Arrays.toString(numberList.toArray()));
     }
@@ -208,30 +152,11 @@ public class HelloController implements Initializable {
         log(Arrays.toString(numAndAction.toArray()));
     }
     private String getResult(String input) {
-        getSymbols(input);
-        log(Arrays.toString(allOperationsList.toArray()));
-        getNumbers(input);
-        log(Arrays.toString(numberList.toArray()));
-        allOperationsList.removeLast();
-        calculate();
-        double result = 0;
-        if (numAndAction.getFirst().getAction() == '*') {
-            result = numAndAction.getFirst().getA() * numAndAction.getFirst().getB();
-            log(String.valueOf(result));
-        } else if (numAndAction.getFirst().getAction() == '/') {
-            log(String.valueOf(numAndAction.getFirst().getA()));
-            log(String.valueOf(numAndAction.getFirst().getB()));
-            result = numAndAction.getFirst().getA() / numAndAction.getFirst().getB();
-            log(String.valueOf(result));
-        } else if (numAndAction.getFirst().getAction() == '+') {
-            result = numAndAction.getFirst().getA() + numAndAction.getFirst().getB();
-            log(String.valueOf(result));
-        } else if (numAndAction.getFirst().getAction() == '-') {
-            result = numAndAction.getFirst().getA() - numAndAction.getFirst().getB();
-            log(String.valueOf(result));
-        }
+        double result;
+        Counting counting = new Counting(numAndAction.getFirst().getAction());
+        result = counting.calculate(numAndAction.getFirst().getA(), numAndAction.getFirst().getB());
         log(String.valueOf(numAndAction.getFirst().getA()));
-        String removePart = numAndAction.getFirst().getA() + String.valueOf(numAndAction.getFirst().getAction()) + String.valueOf(numAndAction.getFirst().getB());
+        String removePart = numAndAction.getFirst().getA() + String.valueOf(numAndAction.getFirst().getAction()) + numAndAction.getFirst().getB();
         int a = input.indexOf(removePart);
         log(String.valueOf(a));
         int b = removePart.length();
@@ -257,12 +182,28 @@ public class HelloController implements Initializable {
         }
         symbol = '-';
         index = input.indexOf(symbol);
+        String inputWithoutNullChar = input;
+        boolean nullCharMinus = false;
+        log(String.valueOf(index));
         log("Минусы");
-        while (index != -1) {
-            log(String.valueOf(index));
-            subIndexList.add(index);
-            index = input.indexOf(symbol, index + 1);
+        if (index == 0) {
+            inputWithoutNullChar = input.substring(1);
+            nullCharMinus = true;
         }
+        index = inputWithoutNullChar.indexOf(symbol);
+            while (index != -1) {
+                if ((inputWithoutNullChar.charAt(index-1) != '+') && (inputWithoutNullChar.charAt(index-1) != '-') && (inputWithoutNullChar.charAt(index-1) != '*') && (inputWithoutNullChar.charAt(index-1) != '/')) {
+                    log(String.valueOf(index));
+                    if (nullCharMinus) {
+                        subIndexList.add(index+1);
+                    } else {
+                        subIndexList.add(index);
+                    }
+
+                }
+                index = input.indexOf(symbol, index + 1);
+            }
+
         symbol = '*';
         index = input.indexOf(symbol);
         log("Умножение");
@@ -304,10 +245,17 @@ public class HelloController implements Initializable {
     }
     private String resulted() {
         while (resultedInput.contains("+") || resultedInput.contains("-") || resultedInput.contains("*") || resultedInput.contains("/")) {
-            if (resultedInput.indexOf('-') != 0){
-                resultedInput = getResult(resultedInput);
-            } else {
+            getSymbols(resultedInput);
+            log(Arrays.toString(allOperationsList.toArray()));
+            getNumbers(resultedInput);
+            log(Arrays.toString(numberList.toArray()));
+            allOperationsList.removeLast();
+            calculate();
+            if (allOperationsList.isEmpty()) {
+                clearArrays();
                 return resultedInput;
+            } else {
+                resultedInput = getResult(resultedInput);
             }
         }
         return resultedInput;
@@ -337,7 +285,7 @@ public class HelloController implements Initializable {
     }
     @FXML
     protected void inputCalculations() {
-        if (!input1.getText().isEmpty()) {
+        if (!(input1.getText().isEmpty()) && !(Objects.equals(String.valueOf(input1.getText()), "-"))) {
             double a = Double.parseDouble(String.valueOf(input1.getText()));
             if ((!input2.getText().isEmpty()) && (isDiv(input2.getText()))) {
                 if (Objects.equals(input1.getText(), "0")) {
